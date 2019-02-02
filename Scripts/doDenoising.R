@@ -2,17 +2,21 @@ library( ANTsR )
 library( ANTsRNet )
 library( keras )
 
-args <- commandArgs( trailingOnly = TRUE )
+# args <- commandArgs( trailingOnly = TRUE )
 
-if( length( args ) != 3 )
-  {
-  helpMessage <- paste0( "Usage:  Rscript doDenoising.R inputFile inputMaskFile outputFile\n" )
-  stop( helpMessage )
-  } else {
-  inputFileName <- args[1]
-  inputMaskFileName <- args[2]
-  outputFileName <- args [3]
-  }
+# if( length( args ) != 3 )
+#   {
+#   helpMessage <- paste0( "Usage:  Rscript doDenoising.R inputFile inputMaskFile outputFile\n" )
+#   stop( helpMessage )
+#   } else {
+#   inputFileName <- args[1]
+#   inputMaskFileName <- args[2]
+#   outputFileName <- args [3]
+#   }
+
+inputFileName <- "Data/Example/1097782_defaced_MPRAGE.nii.gz"
+inputMaskFileName <- "Data/Example/1097782_defaced_MPRAGEBrainExtractionMask.nii.gz"
+outputFileName <- "denoisedOutput.nii.gz"
 
 patchSize <- c( 32, 32, 32 )
 numberOfFiltersAtBaseLayer <- 32
@@ -45,10 +49,9 @@ startTimeTotal <- Sys.time()
 
 cat( "Reading ", inputFileName )
 startTime <- Sys.time()
-image <- antsImageRead( inputFileName, dimension = 3 )
+imageOriginal <- antsImageRead( inputFileName, dimension = 3 )
 mask <- antsImageRead( inputMaskFileName, dimension = 3 )
 mask[mask != 0] <- 1
-image[mask == 0] <- 0
 endTime <- Sys.time()
 elapsedTime <- endTime - startTime
 cat( "  (elapsed time:", elapsedTime, "seconds)\n" )
@@ -56,7 +59,7 @@ cat( "  (elapsed time:", elapsedTime, "seconds)\n" )
 cat( "Extracting patches based on mask." )
 startTime <- Sys.time()
 
-imageArray <- as.array( image )
+imageArray <- as.array( imageOriginal )
 
 imageSd <- sd( imageArray[which( imageArray != 0 )] )
 imageMean <- mean( imageArray[which( imageArray != 0 )] )
