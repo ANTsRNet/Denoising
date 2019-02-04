@@ -2,21 +2,17 @@ library( ANTsR )
 library( ANTsRNet )
 library( keras )
 
-# args <- commandArgs( trailingOnly = TRUE )
+args <- commandArgs( trailingOnly = TRUE )
 
-# if( length( args ) != 3 )
-#   {
-#   helpMessage <- paste0( "Usage:  Rscript doDenoising.R inputFile inputMaskFile outputFile\n" )
-#   stop( helpMessage )
-#   } else {
-#   inputFileName <- args[1]
-#   inputMaskFileName <- args[2]
-#   outputFileName <- args [3]
-#   }
-
-inputFileName <- "Data/Example/1097782_defaced_MPRAGE.nii.gz"
-inputMaskFileName <- "Data/Example/1097782_defaced_MPRAGEBrainExtractionMask.nii.gz"
-outputFileName <- "denoisedOutput.nii.gz"
+if( length( args ) != 3 )
+  {
+  helpMessage <- paste0( "Usage:  Rscript doDenoising.R inputFile inputMaskFile outputFile\n" )
+  stop( helpMessage )
+  } else {
+  inputFileName <- args[1]
+  inputMaskFileName <- args[2]
+  outputFileName <- args [3]
+  }
 
 patchSize <- c( 32, 32, 32 )
 numberOfFiltersAtBaseLayer <- 32
@@ -91,6 +87,8 @@ startTime <- Sys.time()
 
 cleanedImage <- reconstructImageFromPatches( drop( predictedDataArray ),
   mask, strideLength = strideLength, domainImageIsMask = TRUE )
+cleanedImage[mask == 0] <- imageOriginal[mask == 0]
+cleanedImage[mask != 0] <- cleanedImage[mask != 0] * imageSd + imageMean
 
 antsImageWrite( cleanedImage, outputFileName )
 
